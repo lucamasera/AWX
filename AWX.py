@@ -11,7 +11,7 @@ class AWX(Dense):
         kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None,
         **kwargs):
         
-        self.n = n_norm
+        self.n = K.constant(n_norm)
         self.leaves = A.sum(0) == 0
         self.A = np.zeros(A.shape)
         
@@ -25,7 +25,7 @@ class AWX(Dense):
     
         self.A[self.leaves,self.leaves] = 1
         
-        self.A = K.constant(self.A)
+        self.R = K.constant(self.A)
         self.leaves = K.constant(self.leaves)
         units = A.shape[0]
         
@@ -46,12 +46,18 @@ class AWX(Dense):
             
         if self.activation is not None:
             output = self.activation(output)
-            
-        if self.n > 1:
-            output = self.n_norm(output.reshape((-1,)) * self.A.T).reshape((1,-1))
-        elif self.n == 1:
-            output = K.clip(K.dot(output, self.A), 0, 1)
-        elif self.n == 0:
-            output = K.max(output.reshape((-1,)) * self.A.T, -1).reshape((1,-1))
         
+        output = K.tf.cond(
+            K.greater(self.n, 1),
+            lambda: self.n_norm(K.tf.multiply(K.tf.expand_dims(output, 1), K.transpose(self.A))),
+            lambda: K.tf.cond(
+                K.equal(self.n, 1),
+                lambda: K.clip(K.dot(output, self.A), 0, 1),
+                lambda: K.tf.cond(
+                    K.equal(self.n, 0),
+                    lambda: K.max(K.tf.multiply(K.tf.expand_dims(output, 1), K.transpose(self.A)), -1),
+                    lambda: output #replace with output * K.eye(R.shape)
+                )
+            )
+        )        
         return output
