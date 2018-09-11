@@ -1,7 +1,7 @@
 import numpy as np
 import keras.backend as K
+import networkx as nx
 
-from copy import deepcopy
 from keras.layers import Dense
 
 
