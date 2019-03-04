@@ -1,12 +1,15 @@
 import numpy as np
-import keras.backend as K
+
 import tensorflow as tf
+import keras.backend as K
+
 import networkx as nx
 
+from copy import deepcopy
 from keras.layers import Dense
 
 
-class AWX(k.layers.Dense):
+class AWX(Dense):
     def __init__(
         self, A, n_norm=5, activation=None, use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
         kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None,
