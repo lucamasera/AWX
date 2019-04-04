@@ -16,9 +16,6 @@ class AWX(Dense):
         **kwargs):
         
         assert n_norm >= 0
-        self.use_soft_clipping = use_soft_clipping
-        self.max_val_clip = max_val_clip
-        self.clip_base = clip_base
         
         self.n = n_norm
         self.leaves = A.sum(0) == 0
